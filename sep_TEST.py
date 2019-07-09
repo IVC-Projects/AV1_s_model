@@ -5,23 +5,41 @@ import os, time
 from nf_MODEL import model
 #from VDSRMODELold import model
 from nf_UTILS import *
-from sepGra import getRect, getSobelGradient
+from sepGra import getSobelGradient
 
 tf.logging.set_verbosity(tf.logging.WARN)
 
-EXP_DATA = "20190531-av1-2k-sepGrad-small"
+EXP_DATA = "20190531-av1-2k-noGrad"
 TESTOUT_PATH = "./testout/%s/"%(EXP_DATA)
-SMALL_MODEL_PATH = "./checkpoints/20190531-av1-2k-sepGrad-small"
-BIG_MODEL_PATH = "./checkpoints/20190601-av1-2k-sepGrad-big-continue"
+# SMALL_MODEL_PATH = ".\\checkpoints\\20190531-av1-2k-sepGrad-small\\"
+SMALL_MODEL_PATH = "D:\\lyd\\cjs_train_all\\nf\\checkpoints\\20190601-av1-2k-sepGrad-small"
+BIG_10_MODEL_PATH = "D:\\lyd\\cjs_train_all\\nf\\checkpoints\\20190601-av1-2k-sepGrad-big-continue"
+BIG_15_MODEL_PATH = "D:\\lyd\\cjs_train_all\\nf\\checkpoints\\20190616-av1-2k-sepGrad15-big"
+BIG_20_MODEL_PATH = "D:\\lyd\\cjs_train_all\\nf\\checkpoints\\20190616-av1-2k-sepGrad20-big"
 #MODEL_PATH = "/home/chenjs/a4/chenjs/checkpoints_before_chen/in-loop-filter/0611"
-ORIGINAL_PATH = "/home/chenjs/ee-new/data/test/18/av1_18_qp53"
-GT_PATH = "/home/chenjs/ee-new/data/test/18/gt"
+ORIGINAL_PATH = "./av1_18_qp53"
+GT_PATH = "./gt"
 OUT_DATA_PATH = "./outdata/%s/"%(EXP_DATA)
 NOFILTER = {'qp22':41.7929, 'qp27':37.6837, 'qp32':33.9330, 'qp37':30.5175}
 
 ##Ground truth images dir should be the 2nd component of 'fileOrDir' if 2 components are given.
 
 ##cb, cr components are not implemented
+def getRect(image, startPoint, hBlockSize, wBlockSize):
+
+    data_col = []
+    for k in range(hBlockSize):
+        data_row = []
+        for l in range(wBlockSize):
+            data_row.append(image[startPoint[0] + k][startPoint[1] + l])
+        data_col.append(data_row)
+    #The type should be 'uint8' because the data will be writen into file.
+    data_col = np.asarray(data_col, dtype='float32')
+    #print("###")
+    #print(data_col)
+
+    return data_col
+
 def prepare_test_data(fileOrDir):
     if not os.path.exists(TESTOUT_PATH):
         os.mkdir(TESTOUT_PATH)
@@ -132,7 +150,7 @@ def test_all_ckpt(fileOrDir):
 
             numhBlock = h // 64 if h%64==0 else h // 64 + 1
             numwBlock = w // 64 if w%64==0 else w // 64 + 1
-            print(numhBlock, numwBlock)
+            # print(numhBlock, numwBlock)
 
             for k in range(numhBlock):
                 for l in range(numwBlock):
@@ -160,10 +178,23 @@ def test_all_ckpt(fileOrDir):
 
                     sobelMean = np.mean(sobelBlock)
                     if sobelMean <= 10:
+                        # saver.restore(sess,os.path.join(SMALL_MODEL_PATH,'20190601-av1-2k-sepGrad-small_509.ckpt'))
+                        print("use small model!")
                         saver.restore(sess,os.path.join(SMALL_MODEL_PATH,'20190601-av1-2k-sepGrad-small_509.ckpt'))
+                    elif sobelMean <= 15:
+                        # saver.restore(sess,os.path.join(BIG_MODEL_PATH,'20190601-av1-2k-sepGrad-big_049.ckpt'))
+                        print("use 10 big model!")
+                        saver.restore(sess,os.path.join(BIG_10_MODEL_PATH,'20190601-av1-2k-sepGrad-big-continue_049.ckpt'))
+                    elif sobelMean <= 20:
+                        # saver.restore(sess,os.path.join(BIG_MODEL_PATH,'20190601-av1-2k-sepGrad-big_049.ckpt'))
+                        print("use 15 big model!")
+                        saver.restore(sess,os.path.join(BIG_15_MODEL_PATH,'20190616-av1-2k-sepGrad15-big_169.ckpt'))
                     else:
-                        saver.restore(sess,os.path.join(BIG_MODEL_PATH,'20190601-av1-2k-sepGrad-big_049.ckpt'))
+                        # saver.restore(sess,os.path.join(BIG_MODEL_PATH,'20190601-av1-2k-sepGrad-big_049.ckpt'))
+                        print("use 20 big model!")
+                        saver.restore(sess,os.path.join(BIG_20_MODEL_PATH,'20190616-av1-2k-sepGrad20-big_239.ckpt'))
 
+                    
                     #print(inBlock)
                     out = sess.run(output_tensor, feed_dict={input_tensor: inBlock})
                     out = np.squeeze(out)
@@ -191,7 +222,7 @@ def test_all_ckpt(fileOrDir):
 
         #summary = sess.run(merged, {re_psnr:avg_psnr})
         #file_writer.add_summary(summary, epoch)
-        tf.logging.warning("AVG_DURATION:%.2f\tAVG_PSNR:%.2f\tepoch:%d"%(avg_duration, avg_psnr, 1))
+        tf.logging.warning("AVG_DURATION:%.2f\tAVG_PSNR:%.4f\tepoch:%d"%(avg_duration, avg_psnr, 1))
 
         #QP = os.path.basename(ORIGINAL_PATH)
         #tf.logging.warning("QP:%s\tepoch: %d\tavg_max:%.4f\tdelta:%.4f"%(QP, max[1], max[0], max[0]-NOFILTER[QP]))
