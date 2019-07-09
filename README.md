@@ -12,5 +12,5 @@ small model's training, testing code and example
 **av1_recon_qp53** : reconstruction image after AV1 encoding with QP53 (quantization Parameter = 53)  
 **doc** : some documents help to use the code(English version not complete yet)  
 ## Network Structure Intruduction
-Network of the Small Model is comprised of 7 cascading convolutional layers, including an input layer, an output layer and 5 hidden layers.  
-Each convolutional layers are 3×3 size. Using ReLU activating function. Stride is [1, 1, 1, 1].(Means sliding step is 1.)  
+  Network of the Small Model is comprised of 7 cascading convolutional layers, including an input layer, an output layer and 5 hidden layers.  
+  Each convolutional layers are 3×3 size. Using ReLU activating function. Stride is [1, 1, 1, 1].(Means sliding step is 1.)  
