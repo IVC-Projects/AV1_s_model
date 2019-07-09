@@ -14,3 +14,6 @@ small model's training, testing code and example
 ## Network Structure Intruduction
   Network of the Small Model is comprised of 7 cascading convolutional layers, including an input layer, an output layer and 5 hidden layers.  
   Each convolutional layers are 3×3 size. Using ReLU activating function. Stride is [1, 1, 1, 1].(Means sliding step is 1.)  
+<div align=center>
+   <img width="270" height="220" src="img/network_structure.png"/>
+</div>
